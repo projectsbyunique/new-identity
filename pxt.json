@@ -1,0 +1,47 @@
+{
+    "name": "New Identity Main Build (Alpha Dev)",
+    "description": "",
+    "dependencies": {
+        "device": "*",
+        "arcade-sprite-util": "github:jwunderl/arcade-sprite-util#v0.4.0",
+        "arcade-mini-menu": "github:riknoll/arcade-mini-menu#c8b01b9d47f85a5133c786f1c026b1f376fe4285",
+        "Timers": "github:microsoft/arcade-timers#v1.1.0",
+        "Color Fading": "github:jwunderl/pxt-color#v0.2.2",
+        "settings-blocks": "github:microsoft/pxt-settings-blocks#v1.0.0",
+        "BetterSettings": "github:S0m3randomguy/bettersettings#2023.5.1",
+        "arcade-text": "github:microsoft/arcade-text#v1.3.0",
+        "Image Editor 1.2.10": "pub:71338-71609-79717-70646",
+        "arcade-fancy-text": "github:riknoll/arcade-fancy-text#v0.0.13",
+        "arcade-sprite-data": "github:microsoft/arcade-sprite-data#v0.2.1",
+        "tilemaps": "github:microsoft/pxt-tilemaps#v1.12.0",
+        "pxt-scaling": "github:jwunderl/pxt-scaling#v0.1.0",
+        "pxt-zoom": "github:kiwiphoenix364/pxt-zoom#v2.0.1",
+        "arcade-minimap": "github:microsoft/arcade-minimap#v0.6.1"
+    },
+    "files": [
+        "main.blocks",
+        "main.ts",
+        "README.md",
+        "assets.json",
+        "images.g.jres",
+        "images.g.ts",
+        "tilemap.g.jres",
+        "tilemap.g.ts",
+        "frames.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "targetVersions": {
+        "branch": "v1.12.51",
+        "tag": "v1.12.51",
+        "commits": "https://github.com/microsoft/pxt-arcade/commits/eb9fd884260f64c934fb51355e36f8c76272b6b4",
+        "target": "1.12.51",
+        "pxt": "8.5.63",
+        "targetId": "arcade"
+    },
+    "supportedTargets": [
+        "arcade"
+    ],
+    "preferredEditor": "blocksprj"
+}
