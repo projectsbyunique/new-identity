@@ -4,6 +4,17 @@ namespace SpriteKind {
     export const miniMapIndi = SpriteKind.create()
     export const shadow = SpriteKind.create()
 }
+
+interface CarState {
+    speed: number;          // Current speed of the car
+    turningSpeed: number;   // Current turning speed of the car
+}
+
+let car: CarState = {
+    speed: 0,          // Initial speed
+    turningSpeed: 3,     // Initial turning speed
+};
+
 function setupLevel () {
 	
 }
@@ -580,9 +591,25 @@ function drawSphere () {
     }
 }
 function updateRotation () {
-    ship.setImage(scaling.rot(ogImg.clone(), sprites.readDataNumber(ship, "Angle")))
-    shipShadow.setImage(scaling.rot(assets.image`myImage26`, sprites.readDataNumber(ship, "Angle")))
+    if (controller.A.isPressed() == false) {
+        timer.after(1, function () {
+            driftImageRot = sprites.readDataNumber(ship, "Angle")
+        })
+        ship.setImage(scaling.rot(ogImg.clone(), sprites.readDataNumber(ship, "Angle")))
+        shipShadow.setImage(scaling.rot(assets.image`myImage26`, sprites.readDataNumber(ship, "Angle")))
+    } else {
+        ship.setImage(scaling.rot(ogImg.clone(), driftImageRot))
+        shipShadow.setImage(scaling.rot(assets.image`myImage26`, driftImageRot))
+    }
+
+    
 }
+
+controller.A.onEvent(ControllerButtonEvent.Released, function () {
+    sprites.setDataNumber(ship, "Angle", driftImageRot)
+    console.log("changed " + sprites.readDataNumber(ship, "Angle")+" to "+driftImageRot)
+})
+
 function levelMenu__intro (bool: boolean) {
     color.startFadeFromCurrent(color.originalPalette, 200)
     sprites.destroyAllSpritesOfKind(SpriteKind.UI)
@@ -777,13 +804,59 @@ function change_menu_selection_by_1_to_right (bool: boolean) {
         }
     }
 }
+
+/*
+function calculateTurningSpeed(accelerationSpeed: number): number {
+    // Define the range for acceleration speed and turning speed
+    const minAcceleration = 0;
+    const maxAcceleration = 120;
+    const minTurningSpeed = 2;
+    const maxTurningSpeed = 10;
+
+    // Ensure acceleration speed is within bounds
+    if (accelerationSpeed < minAcceleration) accelerationSpeed = minAcceleration;
+    if (accelerationSpeed > maxAcceleration) accelerationSpeed = maxAcceleration;
+
+    // Calculate the turning speed based on the inverse relationship
+    const turningSpeed = maxTurningSpeed -
+        ((accelerationSpeed - minAcceleration) / (maxAcceleration - minAcceleration)) *
+        (maxTurningSpeed - minTurningSpeed);
+
+    return turningSpeed;
+}
+*/
+
 spriteutils.onSpriteKindUpdateInterval(SpriteKind.Player, 0, function (sprite) {
+
+    const MAX_SPEED = 120;
+    const MIN_TURNING_SPEED = 3;
+    const MAX_TURNING_SPEED = 5;
+    const DRIFT_IMPACT_FACTOR = 0.32;
+    const EXPONENT =2
+
+    function calculateTurningSpeed(speed: number): number {
+        const driftFactor = calculateDriftFactor(speed);
+        return MAX_TURNING_SPEED - driftFactor * (MAX_TURNING_SPEED - MIN_TURNING_SPEED);
+    }
+
+    function calculateDriftFactor(speed: number): number {
+        return speed / MAX_SPEED;
+    }
+
+    function calculateAdjustedSpeed(speed: number): number {
+        const driftFactor = calculateDriftFactor(speed);
+        return speed * (1 - Math.pow(driftFactor * DRIFT_IMPACT_FACTOR, EXPONENT));
+    }
+
     shipShadow.setPosition(sprite.x - spriteutils.speed(sprite) / 10 / 2, sprite.y + spriteutils.speed(sprite) / 10 / 2)
     shipShadow.z = ship.z - 1
+
     if (spdFirstDgt != null) {
         updateSpeedometer(Math.floor(spriteutils.speed(sprite)))
     }
+
     if (controller.up.isPressed()) {
+
         music.play(music.createSoundEffect(
         WaveShape.Noise,
         spriteutils.speed(sprite) * 25,
@@ -794,25 +867,66 @@ spriteutils.onSpriteKindUpdateInterval(SpriteKind.Player, 0, function (sprite) {
         SoundExpressionEffect.None,
         InterpolationCurve.Linear
         ), music.PlaybackMode.InBackground)
-        spriteutils.setVelocityAtAngle(sprite, spriteutils.degreesToRadians(sprites.readDataNumber(sprite, "Angle") - 180), inOutLerpSmoothStep(spriteutils.speed(sprite), 120, 0.1))
+
+        if (controller.A.isPressed() == false) {
+            spriteutils.setVelocityAtAngle(sprite, spriteutils.degreesToRadians(sprites.readDataNumber(sprite, "Angle") - 180), inOutLerpSmoothStep(spriteutils.speed(sprite), 120, 0.07))
+        } else {
+            spriteutils.setVelocityAtAngle(sprite, spriteutils.degreesToRadians(sprites.readDataNumber(sprite, "Angle") - 180), inOutLerpSmoothStep(spriteutils.speed(sprite), calculateAdjustedSpeed(spriteutils.speed(sprite)), 0.07))
+        }
+
     } else {
-        spriteutils.setVelocityAtAngle(sprite, spriteutils.degreesToRadians(sprites.readDataNumber(sprite, "Angle") - 180), inOutLerpSmoothStep(spriteutils.speed(sprite), 0, 0.1))
+
+        spriteutils.setVelocityAtAngle(sprite, spriteutils.degreesToRadians(sprites.readDataNumber(sprite, "Angle") - 180), inOutLerpSmoothStep(spriteutils.speed(sprite), 0, 0.06))
+    
     }
+
     if (controller.left.isPressed()) {
-        sprites.changeDataNumberBy(sprite, "Angle", -3)
+
+        // If you're drifting, strengthen turn 
+        if (controller.A.isPressed() == false) {
+            
+            // Normal turning speed
+            sprites.changeDataNumberBy(sprite, "Angle", -2)
+        } else {
+            driftImageRot = driftImageRot + calculateTurningSpeed(spriteutils.speed(sprite)-30) * -1
+
+            // Stronger turning speed
+            sprites.changeDataNumberBy(sprite, "Angle", calculateTurningSpeed(spriteutils.speed(sprite)) * -1)
+        }
+
         if (sprites.readDataNumber(sprite, "Angle") < 0) {
             sprites.setDataNumber(sprite, "Angle", 360)
+        }
+        if (driftImageRot < 0) {
+            driftImageRot = 360
         }
         updateRotation()
     }
     if (controller.right.isPressed()) {
-        sprites.changeDataNumberBy(sprite, "Angle", 3)
+
+        // If you're drifting, strengthen turn 
+        if (controller.A.isPressed() == false) {
+
+            // Normal turning speed
+            sprites.changeDataNumberBy(sprite, "Angle", 2)
+        } else {
+            driftImageRot = driftImageRot + calculateTurningSpeed(spriteutils.speed(sprite) - 30)
+
+            // Stronger turning speed
+            sprites.changeDataNumberBy(sprite, "Angle", calculateTurningSpeed(spriteutils.speed(sprite)))
+        }
+
         if (sprites.readDataNumber(sprite, "Angle") > 360) {
             sprites.setDataNumber(sprite, "Angle", 0)
+        }
+        if (driftImageRot > 360) {
+            driftImageRot = 0
         }
         updateRotation()
     }
 })
+
+let driftImageRot = 90
 let menu_list: miniMenu.MenuItem[] = []
 let targetList: string[][] = []
 let text_list: string[] = []

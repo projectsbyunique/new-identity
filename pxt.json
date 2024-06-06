@@ -36,12 +36,30 @@
         "branch": "v1.12.51",
         "tag": "v1.12.51",
         "commits": "https://github.com/microsoft/pxt-arcade/commits/eb9fd884260f64c934fb51355e36f8c76272b6b4",
-        "target": "1.12.51",
+        "target": "1.12.53",
         "pxt": "8.5.63",
         "targetId": "arcade"
     },
     "supportedTargets": [
         "arcade"
     ],
-    "preferredEditor": "blocksprj"
+    "preferredEditor": "tsprj",
+    "palette": [
+        "#000000",
+        "#FFFFFF",
+        "#FF2121",
+        "#FF93C4",
+        "#FF8135",
+        "#FFF609",
+        "#249CA3",
+        "#78DC52",
+        "#003FAD",
+        "#87F2FF",
+        "#8E2EC4",
+        "#A8A3A8",
+        "#3D3D3D",
+        "#E0E0E0",
+        "#91463d",
+        "#000000"
+    ]
 }
